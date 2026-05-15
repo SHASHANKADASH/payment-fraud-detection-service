@@ -18,8 +18,9 @@ public class AccountModel {
     private Long id;
     private Double balance;
 
-    // For optimistic locking
+    // For optimistic locking. This is provided by hibernate.
     // Prevents lost updates
+    // @Version is annotation given by jakarta
     @Version
     private Long version;
 }
