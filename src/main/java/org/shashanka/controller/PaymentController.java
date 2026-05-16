@@ -3,22 +3,24 @@ package org.shashanka.controller;
 import org.shashanka.domain.PaymentRequest;
 import org.shashanka.domain.PaymentResponse;
 import org.shashanka.domain.SimulationRequest;
+import org.shashanka.service.PaymentIdempotentService;
 import org.shashanka.service.PaymentService;
 import org.shashanka.service.PaymentSimulationService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final PaymentIdempotentService paymentIdempotentService;
     private final PaymentSimulationService paymentSimulationService;
 
-    public PaymentController(PaymentService paymentService, PaymentSimulationService paymentSimulationService) {
+    public PaymentController(PaymentService paymentService,
+                             PaymentIdempotentService paymentIdempotentService,
+                             PaymentSimulationService paymentSimulationService) {
         this.paymentService = paymentService;
+        this.paymentIdempotentService = paymentIdempotentService;
         this.paymentSimulationService = paymentSimulationService;
     }
 
@@ -27,6 +29,12 @@ public class PaymentController {
         PaymentResponse paymentResponse = paymentService.processPayment(payment);
         System.out.println(paymentResponse);
         return paymentResponse;
+    }
+
+    @PostMapping("/idempotent")
+    public PaymentResponse processPayment(final @RequestHeader("x-idempotency-key") String idempotencyKey,
+                                          final @RequestBody PaymentRequest payment) {
+        return paymentIdempotentService.processPayment(idempotencyKey, payment);
     }
 
     @PostMapping("/simulate")
