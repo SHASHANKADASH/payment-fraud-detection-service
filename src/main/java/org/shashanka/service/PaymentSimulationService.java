@@ -8,15 +8,15 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 
 @Service
 @Log4j2
 public class PaymentSimulationService {
-    private final ExecutorService executorService;
+    private final Executor executorService;
     private final PaymentService paymentService;
 
-    public PaymentSimulationService(ExecutorService executorService, PaymentService paymentService) {
+    public PaymentSimulationService(Executor executorService, PaymentService paymentService) {
         this.executorService = executorService;
         this.paymentService = paymentService;
     }

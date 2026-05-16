@@ -23,7 +23,9 @@ public class PaymentService {
     private final AccountRepository accountRepository;
     private final FraudService fraudService;
 
-    public PaymentService(PaymentRepository paymentRepository, AccountRepository accountRepository, FraudService fraudService) {
+    public PaymentService(PaymentRepository paymentRepository,
+                          AccountRepository accountRepository,
+                          FraudService fraudService) {
         this.paymentRepository = paymentRepository;
         this.accountRepository = accountRepository;
         this.fraudService = fraudService;
@@ -48,17 +50,21 @@ public class PaymentService {
         account.setBalance(remainingBalance);
         accountRepository.save(account);
         log.info("Balance after update {}", account.getBalance());
-        final PaymentModel paymentModel = PaymentModel.builder()
-                .amount(payment.getAmount())
-                .accountId(account.getId())
-                .merchant(payment.getMerchant())
-                .status("SUCCESS")
-                .createdAt(LocalDateTime.now())
-                .build();
+        final PaymentModel paymentModel = getPayment(payment, account.getId());
         paymentRepository.save(paymentModel);
         return PaymentResponse.builder().paymentId(paymentModel.getId())
                 .status(paymentModel.getStatus())
                 .remainingBalance(account.getBalance()).build();
+    }
+
+    private static PaymentModel getPayment(PaymentRequest payment, Long id) {
+        return PaymentModel.builder()
+                .amount(payment.getAmount())
+                .accountId(id)
+                .merchant(payment.getMerchant())
+                .status("SUCCESS")
+                .createdAt(LocalDateTime.now())
+                .build();
     }
 
     private static void addDelay(int delay) {

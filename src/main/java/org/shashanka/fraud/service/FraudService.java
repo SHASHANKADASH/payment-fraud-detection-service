@@ -10,22 +10,28 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 @Service
 @Log4j2
 public class FraudService {
     private final Map<Long, UserRiskProfile> riskCache = new ConcurrentHashMap<>();
+    private final Executor executor;
+
+    public FraudService(Executor executor) {
+        this.executor = executor;
+    }
 
     public boolean runFraudChecks(final Long accountId, Double amount, final String merchant) {
         updateRiskCache(accountId, amount);
         final CompletableFuture<Boolean> velocityCompletableFuture = CompletableFuture.supplyAsync(
-                () -> velocity(accountId)
+                () -> velocity(accountId), executor
         );
         final CompletableFuture<Boolean> amountCompletableFuture = CompletableFuture.supplyAsync(
-                () -> amountCheck(amount)
+                () -> amountCheck(amount), executor
         );
         final CompletableFuture<Boolean> merchantCompletableFuture = CompletableFuture.supplyAsync(
-                () -> merchantCheck(merchant)
+                () -> merchantCheck(merchant), executor
         );
         try {
             return velocityCompletableFuture.get() && merchantCompletableFuture.get() && amountCompletableFuture.get();
